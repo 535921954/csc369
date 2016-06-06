@@ -251,7 +251,11 @@ void (*orig_exit_group)(int);
  */
 void my_exit_group(int status)
 {
-
+	pid_t pid = current->pid;
+	//DELETE PID
+	del_pid(pid);
+	//ORIGINAL EXIT GROUP
+	orig_exit_group(status);
 
 
 }
