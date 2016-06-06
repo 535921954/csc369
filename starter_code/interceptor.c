@@ -23,20 +23,20 @@ extern void* sys_call_table[];
 /* The sys_call_table is read-only => must make it RW before replacing a syscall */
 void set_addr_rw(unsigned long addr) {
 
-	unsigned int level;
-	pte_t *pte = lookup_address(addr, &level);
+  unsigned int level;
+  pte_t *pte = lookup_address(addr, &level);
 
-	if (pte->pte &~ _PAGE_RW) pte->pte |= _PAGE_RW;
+  if (pte->pte &~ _PAGE_RW) pte->pte |= _PAGE_RW;
 
 }
 
 /* Restores the sys_call_table as read-only */
 void set_addr_ro(unsigned long addr) {
 
-	unsigned int level;
-	pte_t *pte = lookup_address(addr, &level);
+  unsigned int level;
+  pte_t *pte = lookup_address(addr, &level);
 
-	pte->pte = pte->pte &~_PAGE_RW;
+  pte->pte = pte->pte &~_PAGE_RW;
 
 }
 //-------------------------------------------------------------
@@ -52,25 +52,25 @@ void set_addr_ro(unsigned long addr) {
 
 /* List structure - each intercepted syscall may have a list of monitored pids */
 struct pid_list {
-	pid_t pid;
-	struct list_head list;
+  pid_t pid;
+  struct list_head list;
 };
 
 
 /* Store info about intercepted/replaced system calls */
 typedef struct {
 
-	/* Original system call */
-	asmlinkage long (*f)(struct pt_regs);
+  /* Original system call */
+  asmlinkage long (*f)(struct pt_regs);
 
-	/* Status: 1=intercepted, 0=not intercepted */
-	int intercepted;
+  /* Status: 1=intercepted, 0=not intercepted */
+  int intercepted;
 
-	/* Are any PIDs being monitored for this syscall? */
-	int monitored;
-	/* List of monitored PIDs */
-	int listcount;
-	struct list_head my_list;
+  /* Are any PIDs being monitored for this syscall? */
+  int monitored;
+  /* List of monitored PIDs */
+  int listcount;
+  struct list_head my_list;
 }mytable;
 
 /* An entry for each system call */
@@ -95,18 +95,18 @@ spinlock_t calltable_lock = SPIN_LOCK_UNLOCKED;
  */
 static int add_pid_sysc(pid_t pid, int sysc)
 {
-	struct pid_list *ple=(struct pid_list*)kmalloc(sizeof(struct pid_list), GFP_KERNEL);
+  struct pid_list *ple=(struct pid_list*)kmalloc(sizeof(struct pid_list), GFP_KERNEL);
 
-	if (!ple)
-		return -ENOMEM;
+  if (!ple)
+    return -ENOMEM;
 
-	INIT_LIST_HEAD(&ple->list);
-	ple->pid=pid;
+  INIT_LIST_HEAD(&ple->list);
+  ple->pid=pid;
 
-	list_add(&ple->list, &(table[sysc].my_list));
-	table[sysc].listcount++;
+  list_add(&ple->list, &(table[sysc].my_list));
+  table[sysc].listcount++;
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -115,29 +115,29 @@ static int add_pid_sysc(pid_t pid, int sysc)
  */
 static int del_pid_sysc(pid_t pid, int sysc)
 {
-	struct list_head *i;
-	struct pid_list *ple;
+  struct list_head *i;
+  struct pid_list *ple;
 
-	list_for_each(i, &(table[sysc].my_list)) {
+  list_for_each(i, &(table[sysc].my_list)) {
 
-		ple=list_entry(i, struct pid_list, list);
-		if(ple->pid == pid) {
+    ple=list_entry(i, struct pid_list, list);
+    if(ple->pid == pid) {
 
-			list_del(i);
-			kfree(ple);
+      list_del(i);
+      kfree(ple);
 
-			table[sysc].listcount--;
-			/* If there are no more pids in sysc's list of pids, then
-			 * stop the monitoring only if it's not for all pids (monitored=2) */
-			if(table[sysc].listcount == 0 && table[sysc].monitored == 1) {
-				table[sysc].monitored = 0;
-			}
+      table[sysc].listcount--;
+      /* If there are no more pids in sysc's list of pids, then
+       * stop the monitoring only if it's not for all pids (monitored=2) */
+      if(table[sysc].listcount == 0 && table[sysc].monitored == 1) {
+        table[sysc].monitored = 0;
+      }
 
-			return 0;
-		}
-	}
+      return 0;
+    }
+  }
 
-	return -EINVAL;
+  return -EINVAL;
 }
 
 /**
@@ -146,33 +146,33 @@ static int del_pid_sysc(pid_t pid, int sysc)
  */
 static int del_pid(pid_t pid)
 {
-	struct list_head *i, *n;
-	struct pid_list *ple;
-	int ispid = 0, s = 0;
+  struct list_head *i, *n;
+  struct pid_list *ple;
+  int ispid = 0, s = 0;
 
-	for(s = 1; s < NR_syscalls; s++) {
+  for(s = 1; s < NR_syscalls; s++) {
 
-		list_for_each_safe(i, n, &(table[s].my_list)) {
+    list_for_each_safe(i, n, &(table[s].my_list)) {
 
-			ple=list_entry(i, struct pid_list, list);
-			if(ple->pid == pid) {
+      ple=list_entry(i, struct pid_list, list);
+      if(ple->pid == pid) {
 
-				list_del(i);
-				ispid = 1;
-				kfree(ple);
+        list_del(i);
+        ispid = 1;
+        kfree(ple);
 
-				table[s].listcount--;
-				/* If there are no more pids in sysc's list of pids, then
-				 * stop the monitoring only if it's not for all pids (monitored=2) */
-				if(table[s].listcount == 0 && table[s].monitored == 1) {
-					table[s].monitored = 0;
-				}
-			}
-		}
-	}
+        table[s].listcount--;
+        /* If there are no more pids in sysc's list of pids, then
+         * stop the monitoring only if it's not for all pids (monitored=2) */
+        if(table[s].listcount == 0 && table[s].monitored == 1) {
+          table[s].monitored = 0;
+        }
+      }
+    }
+  }
 
-	if (ispid) return 0;
-	return -1;
+  if (ispid) return 0;
+  return -1;
 }
 
 /**
@@ -180,18 +180,18 @@ static int del_pid(pid_t pid)
  */
 static void destroy_list(int sysc) {
 
-	struct list_head *i, *n;
-	struct pid_list *ple;
+  struct list_head *i, *n;
+  struct pid_list *ple;
 
-	list_for_each_safe(i, n, &(table[sysc].my_list)) {
+  list_for_each_safe(i, n, &(table[sysc].my_list)) {
 
-		ple=list_entry(i, struct pid_list, list);
-		list_del(i);
-		kfree(ple);
-	}
+    ple=list_entry(i, struct pid_list, list);
+    list_del(i);
+    kfree(ple);
+  }
 
-	table[sysc].listcount = 0;
-	table[sysc].monitored = 0;
+  table[sysc].listcount = 0;
+  table[sysc].monitored = 0;
 }
 
 /**
@@ -202,11 +202,11 @@ static void destroy_list(int sysc) {
  */
 static int check_pid_from_list(pid_t pid1, pid_t pid2) {
 
-	struct task_struct *p1 = pid_task(find_vpid(pid1), PIDTYPE_PID);
-	struct task_struct *p2 = pid_task(find_vpid(pid2), PIDTYPE_PID);
-	if(p1->real_cred->uid != p2->real_cred->uid)
-		return -EPERM;
-	return 0;
+  struct task_struct *p1 = pid_task(find_vpid(pid1), PIDTYPE_PID);
+  struct task_struct *p2 = pid_task(find_vpid(pid2), PIDTYPE_PID);
+  if(p1->real_cred->uid != p2->real_cred->uid)
+    return -EPERM;
+  return 0;
 }
 
 /**
@@ -215,17 +215,17 @@ static int check_pid_from_list(pid_t pid1, pid_t pid2) {
  */
 static int check_pid_monitored(int sysc, pid_t pid) {
 
-	struct list_head *i;
-	struct pid_list *ple;
+  struct list_head *i;
+  struct pid_list *ple;
 
-	list_for_each(i, &(table[sysc].my_list)) {
+  list_for_each(i, &(table[sysc].my_list)) {
 
-		ple=list_entry(i, struct pid_list, list);
-		if(ple->pid == pid)
-			return 1;
+    ple=list_entry(i, struct pid_list, list);
+    if(ple->pid == pid)
+      return 1;
 
-	}
-	return 0;
+  }
+  return 0;
 }
 //----------------------------------------------------------------
 
@@ -251,11 +251,11 @@ void (*orig_exit_group)(int);
  */
 void my_exit_group(int status)
 {
-	pid_t pid = current->pid;
-	//DELETE PID
-	del_pid(pid);
-	//ORIGINAL EXIT GROUP
-	orig_exit_group(status);
+  pid_t pid = current->pid;
+  //DELETE PID
+  del_pid(pid);
+  //ORIGINAL EXIT GROUP
+  orig_exit_group(status);
 
 
 }
@@ -281,17 +281,17 @@ void my_exit_group(int status)
  */
 asmlinkage long interceptor(struct pt_regs reg) {
 
-	pid_t curr = current->pid;
+  pid_t curr = current->pid;
 
-	if ((table[reg.ax]).monitored == 2) {
-		log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
-	}
-	else if ((table[reg.ax]).monitored == 1 && check_pid_monitored(reg.ax, curr) == 1) {
-		log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
-	}
+  if ((table[reg.ax]).monitored == 2) {
+    log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
+  }
+  else if ((table[reg.ax]).monitored == 1 && check_pid_monitored(reg.ax, curr) == 1) {
+    log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
+  }
 
-	/* Haven't dealt with blacklisting yet. */
-	return table[reg.ax].f(reg);
+  /* Haven't dealt with blacklisting yet. */
+  return table[reg.ax].f(reg);
 }
 
 /**
@@ -350,7 +350,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 
 
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -375,20 +375,20 @@ long (*orig_custom_syscall)(void);
  * - Ensure synchronization as needed.
  */
 static int init_function(void) {
-	// Initialize variables
+  // Initialize variables
   orig_custom_syscall = sys_call_table[MY_CUSTOM_SYSCALL];
   orig_exit_group = sys_call_table[__NR_exit_group];
-	// Initialize locks for synchronization
+  // Initialize locks for synchronization
   spin_lock_init(&calltable_lock);
   spin_lock_init(&pidlist_lock);
 
   // Lock calltable and make editable
   spin_lock(&calltable_lock);
   set_addr_rw((unsigned long)sys_call_table);
-	// Call to my_syscall and my_exit_group
+  // Call to my_syscall and my_exit_group
   sys_call_table[MY_CUSTOM_SYSCALL] = &my_syscall;
   sys_call_table[__NR_exit_group] = &my_exit_group;
-	// Set back to read-only and unlock calltable
+  // Set back to read-only and unlock calltable
   set_addr_ro((unsigned long)sys_call_table);
   spin_unlock(&calltable_lock);
 
@@ -417,20 +417,20 @@ static int init_function(void) {
 static void exit_function(void)
 {
   // Clear pids
-	int i = 0;
-	for (i = 0; i < NR_syscalls; i++) {
-		destroy_list(i);
-	}
+  int i = 0;
+  for (i = 0; i < NR_syscalls; i++) {
+    destroy_list(i);
+  }
 
   // Lock calltable and make editable
-	spin_lock(&calltable_lock);
-	set_addr_rw((unsigned long)sys_call_table);
+  spin_lock(&calltable_lock);
+  set_addr_rw((unsigned long)sys_call_table);
   // Restore syscalls
-	sys_call_table[MY_CUSTOM_SYSCALL] = orig_custom_syscall;
-	sys_call_table[__NR_exit_group] = orig_exit_group;
+  sys_call_table[MY_CUSTOM_SYSCALL] = orig_custom_syscall;
+  sys_call_table[__NR_exit_group] = orig_exit_group;
   // Set read-only and unlock calltable
-	set_addr_ro((unsigned long)sys_call_table);
-	spin_unlock(&calltable_lock);
+  set_addr_ro((unsigned long)sys_call_table);
+  spin_unlock(&calltable_lock);
 
 }
 
