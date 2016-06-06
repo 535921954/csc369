@@ -277,11 +277,17 @@ void my_exit_group(int status)
  */
 asmlinkage long interceptor(struct pt_regs reg) {
 
+	pid_t curr = current->pid; 
 
+	if ((table[reg.ax]).monitored == 2) {
+		log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);	
+	}  
+	else if ((table[reg.ax]).monitored == 1 && check_pid_monitored(reg.ax, curr) == 1) {
+		log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp); 
+	}
 
-
-
-	return 0; // Just a placeholder, so it compiles with no warnings!
+	/* Haven't dealt with blacklisting yet. */
+	return table[reg.ax].f(reg);
 }
 
 /**
