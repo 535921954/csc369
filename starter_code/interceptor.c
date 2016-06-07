@@ -344,6 +344,16 @@ asmlinkage long interceptor(struct pt_regs reg) {
  *   you might be holding, before you exit the function (including error cases!).
  */
 asmlinkage long my_syscall(int cmd, int syscall, int pid) {
+	
+	if (syscall == 0) {
+		return -EINVAL; 
+	}
+	else if (syscall < 0) {
+		return -EINVAL; 
+	}
+	else if (syscall > NR_syscalls) {
+		return -EINVAL; 
+	}
 
 
 
