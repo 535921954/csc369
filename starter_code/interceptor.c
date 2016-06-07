@@ -373,7 +373,32 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 
   return 0;
 }
+/*
+asmlinkage long my_syscall(int cmd, int syscall, int pid) {
+	//check if sys call is vaild
+	if(syscall < 0 || syscall > NR_syscalls || syscall == MY_CUSTOM_SYSCALL){
+		return -EINVAL;
+	}
+	if(cmd == REQUEST_SYSCALL_INTERCEPT){
+		return 0;
+	}
+	else if (cmd == REQUEST_SYSCALL_RELEASE){
+		return 0;
+	}
+	else if(cmd == REQUEST_START_MONITORING){
+		return 0;
+	}
+	else if(cmd == REQUEST_STOP_MONITORING){
+		return 0;
+	}
 
+
+
+
+
+	return -EINVAL;
+}
+*/
 /**
  *
  */
