@@ -344,31 +344,46 @@ asmlinkage long interceptor(struct pt_regs reg) {
  *   you might be holding, before you exit the function (including error cases!).
  */
 asmlinkage long my_syscall(int cmd, int syscall, int pid) {
-	
-	if (syscall == 0) {
-		return -EINVAL; 
+  /* Check if everything's valid first, then split into four parts
+  *  depending on type of command */
+
+  // Check if valid syscall
+	if ((syscall < 0) || (syscall > NR_syscalls) || (syscall == MY_CUSTOM_SYSCALL)) {
+		return -EINVAL;
 	}
-	else if (syscall < 0) {
-		return -EINVAL; 
-	}
-	else if (syscall > NR_syscalls) {
-		return -EINVAL; 
+  // Check permissions (only root user allowed)
+  if (current_uid() != 0) {
+    return -EPERM;
+  }
+
+  // REQUEST_SYSCALL_INTERCEPT
+	if (cmd == REQUEST_SYSCALL_INTERCEPT) {
+    // Check if syscall already being intercepted
+    if (((table[syscall]).intercepted == 1) && cmd == REQUEST_SYSCALL_INTERCEPT) {
+      return -EBUSY;
+    }
+    // Syscall is now being intercepted
+		table[syscall].intercepted == 1;
+    // Save original syscall into f
+    table[syscall].f = sys_call_table[syscall];
+    // Call locks and set rewritable
+    spin_lock(calltable_lock);
+    set_addr_rw((unsigned long)sys_call_table);
+    // Call to interceptor
+    sys_call_table[syscall] = &interceptor;
+    // Set back to read-only and unlock
+    set_addr_ro((unsigned long)sys_call_table);
+    spin_unlock(calltable_lock);
+    return 0;
 	}
 
-	if (((table[syscall]).intercepted == 1) && cmd == REQUEST_SYSCALL_INTERCEPT) {
-		return -EBUSY;		
-	}
-
-	if (((table[syscall]).intercepted == 0) && cmd == REQUEST_SYSCALL_RELEASE) {
-		return -EINVAL; 	
-	}
-
-	if (cmd == REQUEST_SYSCALL_INTERCEPT) { 
-		table[syscall].intercepted == 1; 
-	}
-	
+  // REQUEST_SYSCALL_RELEASE
 	if (cmd == REQUEST_SYSCALL_RELEASE) {
-		table[syscall].intercepted == 0; 	
+    // Think what you wrote might be better inside the condition
+    if (((table[syscall]).intercepted == 0) && cmd == REQUEST_SYSCALL_RELEASE) {
+      return -EINVAL;
+    }
+		table[syscall].intercepted == 0;
 	}
 
   return 0;
