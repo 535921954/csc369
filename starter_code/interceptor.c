@@ -355,10 +355,21 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 		return -EINVAL; 
 	}
 
+	if (((table[syscall]).intercepted == 1) && cmd == 1) {
+		return -EBUSY;		
+	}
 
+	if (((table[syscall]).intercepted == 0) && cmd == 2) {
+		return -EINVAL; 	
+	}
 
-
-
+	if (cmd == 1) { 
+		table[syscall].intercepted == 1; 
+	}
+	
+	if (cmd == 2) {
+		table[syscall].intercepted == 0; 	
+	}
 
   return 0;
 }
