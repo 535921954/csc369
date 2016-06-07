@@ -356,16 +356,14 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   if (current_uid() != 0) {
     return -EPERM;
   }
-  // Check if syscall already being intercepted
-	if (((table[syscall]).intercepted == 1) && cmd == REQUEST_SYSCALL_INTERCEPT) {
-		return -EBUSY;
-	}
-  // Not sure what this does here? Checking pid?
-	if (((table[syscall]).intercepted == 0) && cmd == REQUEST_SYSCALL_RELEASE) {
-		return -EINVAL;
-	}
+
   // REQUEST_SYSCALL_INTERCEPT
 	if (cmd == REQUEST_SYSCALL_INTERCEPT) {
+    // Check if syscall already being intercepted
+    if (((table[syscall]).intercepted == 1) && cmd == REQUEST_SYSCALL_INTERCEPT) {
+      return -EBUSY;
+    }
+    // Syscall is now being intercepted
 		table[syscall].intercepted == 1;
     // Save original syscall into f
     table[syscall].f = sys_call_table[syscall];
@@ -380,8 +378,15 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
     return 0;
 	}
 
+  // REQUEST_SYSCALL_RELEASE
 	if (cmd == REQUEST_SYSCALL_RELEASE) {
+    // Think what you wrote might be better inside the condition
+    if (((table[syscall]).intercepted == 0) && cmd == REQUEST_SYSCALL_RELEASE) {
+      return -EINVAL;
+    }
 		table[syscall].intercepted == 0;
+
+
 	}
 
   return 0;
