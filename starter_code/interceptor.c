@@ -367,10 +367,12 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   // REQUEST_SYSCALL_INTERCEPT
 	if (cmd == REQUEST_SYSCALL_INTERCEPT) {
 		table[syscall].intercepted == 1;
+    // Save original syscall into f
     table[syscall].f = sys_call_table[syscall];
     // Call locks and set rewritable
     spin_lock(calltable_lock);
     set_addr_rw((unsigned long)sys_call_table);
+    // Call to interceptor
     sys_call_table[syscall] = &interceptor;
     // Set back to read-only and unlock
     set_addr_ro((unsigned long)sys_call_table);
