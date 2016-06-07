@@ -401,7 +401,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 /*
 asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 	//check if sys call is vaild
-	if(syscall < 0 || syscall > NR_syscalls || syscall == MY_CUSTOM_SYSCALL){
+	if(syscall < 0 || syscall > NR_syscalls || syscall == MY_CUSTOM_SYSCALL)){
 		return -EINVAL;
 	}
 	//check if pid is valid
