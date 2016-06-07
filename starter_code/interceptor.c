@@ -396,7 +396,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 		return -EINVAL;
 	}
 	//check if pid is valid
-	if(pid < 0 || (pid != 0 &&){
+	if(pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL){
 		return -EINVAL;
 	}
 	//check permissions
