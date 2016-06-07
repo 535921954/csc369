@@ -343,12 +343,6 @@ asmlinkage long interceptor(struct pt_regs reg) {
  *   to the system call table and the lists of monitored pids. Be careful to unlock any spinlocks
  *   you might be holding, before you exit the function (including error cases!).
  */
-<<<<<<< HEAD
-
-/* Helper functions for checks */
-long valid_syscall(int syscall);
-long valid_pid(int pid);
-long is_root(void);
 
 asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   /* Check if everything's valid first, then split into four parts
@@ -387,38 +381,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 	if (cmd == REQUEST_SYSCALL_RELEASE) {
 		table[syscall].intercepted == 0;
 	}
-
-  // Check if pid is already monitored
-  if (check_pid_monitored(syscall, pid) @/)
-=======
-asmlinkage long my_syscall(int cmd, int syscall, int pid) {
-	
-	if (syscall == 0) {
-		return -EINVAL; 
-	}
-	else if (syscall < 0) {
-		return -EINVAL; 
-	}
-	else if (syscall > NR_syscalls) {
-		return -EINVAL; 
-	}
-
-	if (((table[syscall]).intercepted == 1) && cmd == REQUEST_SYSCALL_INTERCEPT) {
-		return -EBUSY;		
-	}
-
-	if (((table[syscall]).intercepted == 0) && cmd == REQUEST_SYSCALL_RELEASE) {
-		return -EINVAL; 	
-	}
-
-	if (cmd == REQUEST_SYSCALL_INTERCEPT) { 
-		table[syscall].intercepted == 1; 
-	}
-	
-	if (cmd == REQUEST_SYSCALL_RELEASE) {
-		table[syscall].intercepted == 0; 	
-	}
->>>>>>> master
 
   return 0;
 }
