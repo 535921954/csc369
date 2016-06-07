@@ -379,6 +379,11 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 	if(syscall < 0 || syscall > NR_syscalls || syscall == MY_CUSTOM_SYSCALL){
 		return -EINVAL;
 	}
+	//check if pid is valid
+	if(pid < 0 || (pid != 0 &&){
+		return -EINVAL;
+	}
+	//check permissions
 	if(cmd == REQUEST_SYSCALL_INTERCEPT){
 		return 0;
 	}
