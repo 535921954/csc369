@@ -403,7 +403,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 	  if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
 		  return -EINVAL; 
 	  }
-	  //check root
+	  //check permission
 	  if (current_uid() != 0) {
 		  if (pid == 0) {
 			  return -EPERM; 
@@ -439,7 +439,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 	  if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
 		  return -EINVAL; 
 	  }
-	  //check root
+	  //check permission
 	  if (current_uid() != 0) {
 		  if (pid == 0) {
 			  return -EPERM; 
