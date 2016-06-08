@@ -475,68 +475,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   return 0;
 }
 
-/*   else if (cmd == REQUEST_START_MONITORING) {
-    Check if valid pid
-    if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
-      return -EINVAL;
-    }
-    Check permissions
-    if (current_uid() != 0) {
-      if (pid == 0) {
-        return -EPERM;
-      }
-      else if (check_pid_from_list(current->pid, pid) != 0) {
-        return -EPERM;
-      }
-    }
-
-    Check if already being monitored, otherwise add to list of
-     * monitored pids
-     if (check_pid_monitored(syscall, pid) == 1) {
-       return -EBUSY;
-     }
-     else {
-       spin_lock(&pidlist_lock);
-       if (add_pid_sysc(pid, syscall) != 0) {
-         spin_unlock(&pidlist_lock);
-         return -ENOMEM;
-       }
-       spin_unlock(&pidlist_lock);
-     }
-  }
-
-  else if (cmd == REQUEST_STOP_MONITORING) {
-    Check if valid pid and check permissions
-    if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
-      return -EINVAL;
-    }
-    Check permissions
-    if (current_uid() != 0) {
-      if (pid == 0) {
-        return -EPERM;
-      }
-      else if (check_pid_from_list(current->pid, pid) != 0) {
-        return -EPERM;
-      }
-    }
-
-    Check whether syscall is being intercepted or monitored
-    if ((table[syscall].intercepted == 0) || (check_pid_monitored(syscall, pid) == 0)) {
-      return -EINVAL;
-    }
-    Stop monitoring the syscall
-    spin_lock(&pidlist_lock);
-    Stop monitoring the specified process for this syscall
-    if (del_pid_sysc(pid, syscall) != 0) {
-      spin_unlock(&pidlist_lock);
-      return -EINVAL;
-    }
-    spin_unlock(&pidlist_lock);
-  } */
-
-/**
- *
- */
 long (*orig_custom_syscall)(void);
 
 
