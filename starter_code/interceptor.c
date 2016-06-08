@@ -357,6 +357,10 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 			return -EBUSY; 
 		}
 		
+		if (current_uid() != 0) {
+			return -EPERM; 
+		}
+			
 		table[syscall].intercepted = 1; 
 		table[syscall].f = sys_call_table[syscall];
 		
@@ -371,6 +375,10 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 	else if (cmd == REQUEST_SYSCALL_RELEASE) {
 		if (table[syscall].intercepted == 0) {
 			return -EINVAL; 
+		}
+		
+		if (current_uid() != 0) {
+			return -EPERM; 
 		}
 		
 		table[syscall].intercepted = 0; 
