@@ -446,7 +446,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
     del_pid_sysc(pid, syscall);
   }
   spin_unlock(&pidlist_lock);
-  break;
   }
   return 0;
 }
