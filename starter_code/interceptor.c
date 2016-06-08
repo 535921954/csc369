@@ -527,6 +527,7 @@ long (*orig_custom_syscall)(void);
  */
 static int init_function(void) {
   // Initialize variables
+  int i = 0;
   orig_custom_syscall = sys_call_table[MY_CUSTOM_SYSCALL];
   orig_exit_group = sys_call_table[__NR_exit_group];
   // Initialize locks for synchronization
@@ -544,7 +545,6 @@ static int init_function(void) {
   spin_unlock(&calltable_lock);
 
   // Bookkeeping for data structures
-  int i = 0;
   for (i = 0; i < NR_syscalls; i++) {
     INIT_LIST_HEAD(&(table[i].my_list));
     table[i].intercepted = 0;
