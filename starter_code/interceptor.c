@@ -404,10 +404,10 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
     }
     /* Check permissions */
     if (current_uid() != 0) {
-      if (check_pid_from_list(current->pid, pid) != 0) {
+      if (pid == 0) {
         return -EPERM;
       }
-      if (pid == 0) {
+      if (check_pid_from_list(current->pid, pid) != 0) {
         return -EPERM;
       }
     }
@@ -434,10 +434,10 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
     }
     /* Check permissions */
     if (current_uid() != 0) {
-      if (check_pid_from_list(current->pid, pid) != 0) {
+      if (pid == 0) {
         return -EPERM;
       }
-      if (pid == 0) {
+      if (check_pid_from_list(current->pid, pid) != 0) {
         return -EPERM;
       }
     }
