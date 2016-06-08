@@ -398,7 +398,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 
   else if (cmd == REQUEST_START_MONITORING) {
     /* Check if valid pid */
-    if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
+    if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == 0)) {
       return -EINVAL;
     }
     /* Check permissions */
@@ -429,7 +429,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   else if (cmd == REQUEST_STOP_MONITORING) {
 
     //error handling
-    if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
+    if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == 0)) {
       return -EINVAL;
     }
     if (current_uid() != 0) {
