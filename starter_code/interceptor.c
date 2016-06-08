@@ -351,7 +351,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   if ((syscall < 0) || (syscall > NR_syscalls) || (syscall == MY_CUSTOM_SYSCALL)) {
     return -EINVAL;
   }
-  printk(pid);
+  printk("%i", pid);
 
   if (cmd == REQUEST_SYSCALL_INTERCEPT) {
     /* Check permissions and whether or not it's being intercepted */
