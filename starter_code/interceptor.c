@@ -367,13 +367,13 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
     // Save original syscall into f
     table[syscall].f = sys_call_table[syscall];
     // Call locks and set rewritable
-    spin_lock(calltable_lock);
+    spin_lock(&calltable_lock);
     set_addr_rw((unsigned long)sys_call_table);
     // Call to interceptor
     sys_call_table[syscall] = &interceptor;
     // Set back to read-only and unlock
     set_addr_ro((unsigned long)sys_call_table);
-    spin_unlock(calltable_lock);
+    spin_unlock(&calltable_lock);
     return 0;
 	}
 
@@ -388,13 +388,21 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
     set_addr_rw((unsigned long)sys_call_table);
     sys_call_table[syscall] = table[syscall].f;
     set_addr_ro((unsigned long)sys_call_table);
-    spin_unlock(calltable_lock);
+    spin_unlock(&calltable_lock);
 
 		table[syscall].intercepted = 0;
 
     return 0;
 
 	}
+
+  if (cmd == REQUEST_START_MONITORING) {
+    // Check if the pid is valid
+    if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL) {
+      return -EINVAL;
+    }
+    //
+  }
 
   return 0;
 }
