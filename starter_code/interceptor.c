@@ -353,7 +353,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   }
 
   if (cmd == REQUEST_SYSCALL_INTERCEPT) {
-    /* Error handling */
+    /* Check permissions and whether or not it's being intercepted */
     if (current_uid() != 0) {
       return -EPERM;
     }
@@ -374,7 +374,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   }
 
   else if (cmd == REQUEST_SYSCALL_RELEASE) {
-    /* Error handling */
+    /* Check permissions and whether or not it's being intercepted */
     if (current_uid() != 0) {
       return -EPERM;
     }
@@ -397,12 +397,18 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   }
 
   else if (cmd == REQUEST_START_MONITORING) {
-    /* Error handling */
+    /* Check if valid pid */
     if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
       return -EINVAL;
     }
+    /* Check permissions */
     if (current_uid() != 0) {
-      return -EPERM;
+      if (check_pid_from_list(current->pid, pid) != 0) {
+        return -EPERM;
+      }
+      if (pid == 0) {
+        return -EPERM;
+      }
     }
 
     /* Check if already being monitored, otherwise add to list of
