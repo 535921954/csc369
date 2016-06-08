@@ -428,7 +428,11 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
     	if (current_uid() != 0) {
       		return -EPERM;
     	}
-    //Check if not being monitored
+     //check if the syscall is not intercepted
+        if (table[syscall].intercepted == 0) {
+            return -EINVAL;
+        }
+     //Check if not being monitored
 	if(check_pid_monitored(syscall, pid) == 0){
 			return -EINVAL;
 	}
