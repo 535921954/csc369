@@ -396,55 +396,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 }
 
 	/*
-  // Check permissions (only root user allowed)
-  if (current_uid() != 0) {
-    return -EPERM;
-  }
-	*/
-/*
-  // REQUEST_SYSCALL_INTERCEPT
-	if (cmd == REQUEST_SYSCALL_INTERCEPT) {
-    // Check if syscall already being intercepted
-    if (table[syscall].intercepted == 1) {
-      return -EBUSY;
-    }
-    // Syscall is now being intercepted
-		table[syscall].intercepted == 1;
-    // Save original syscall into f
-    table[syscall].f = sys_call_table[syscall];
-    // Call locks and set rewritable
-    spin_lock(&calltable_lock);
-    set_addr_rw((unsigned long)sys_call_table);
-    // Call to interceptor
-    sys_call_table[syscall] = &interceptor;
-    // Set back to read-only and unlock
-    set_addr_ro((unsigned long)sys_call_table);
-    spin_unlock(&calltable_lock);
-    return 0;
-	}
-
-  // REQUEST_SYSCALL_RELEASE
-	else if (cmd == REQUEST_SYSCALL_RELEASE) {
-    // Check if the syscall is actually being intercepted
-    if (table[syscall].intercepted == 0) {
-      return -EINVAL;
-    }
-	// Remove pid list
-    destroy_list(syscall);
-    // Replace the syscall back with the original
-    spin_lock(&calltable_lock);
-    set_addr_rw((unsigned long)sys_call_table);
-    sys_call_table[syscall] = table[syscall].f;
-    set_addr_ro((unsigned long)sys_call_table);
-    spin_unlock(&calltable_lock);
-
-		table[syscall].intercepted = 0;
-
-    return 0;
-
-	}
-	
-	/*
 	if (cmd == REQUEST_START_MONITORING) {
     // Check if the pid is valid
     if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL) {
