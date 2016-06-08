@@ -419,36 +419,35 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
        spin_unlock(&pidlist_lock);
      }
   }
-  /*
+
   else if(cmd == REQUEST_STOP_MONITORING){
-	//error handling
-	if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
-      		return -EINVAL;
-    	}
-    	if (current_uid() != 0) {
-      		return -EPERM;
-    	}
+  //error handling
+  if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
+          return -EINVAL;
+      }
+      if (current_uid() != 0) {
+          return -EPERM;
+      }
      //check if the syscall is not intercepted
         if (table[syscall].intercepted == 0) {
             return -EINVAL;
         }
      //Check if not being monitored
-	if(check_pid_monitored(syscall, pid) == 0){
-			return -EINVAL;
-	}
-	spin_lock(&pidlist_lock);
-	if(pid == 0){
-		//stop monitor for this syscall
-		destroy_list(syscall);
-	}
-	else{
-		//stop monitor the specified process for this syscall
-		del_pid_sysc(pid, syscall);
-	}
-	spin_unlock(&pidlist_lock);
-	break;
-	}
-*/
+  if(check_pid_monitored(syscall, pid) == 0){
+      return -EINVAL;
+  }
+  spin_lock(&pidlist_lock);
+  if(pid == 0){
+    //stop monitor for this syscall
+    destroy_list(syscall);
+  }
+  else{
+    //stop monitor the specified process for this syscall
+    del_pid_sysc(pid, syscall);
+  }
+  spin_unlock(&pidlist_lock);
+  break;
+  }
   return 0;
 }
 
