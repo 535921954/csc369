@@ -396,13 +396,13 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 
 	}
 
-  if (cmd == REQUEST_START_MONITORING) {
+  /* if (cmd == REQUEST_START_MONITORING) {
     // Check if the pid is valid
     if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL) {
       return -EINVAL;
     }
-    //
-  }
+    return 0;
+  } */
 
   return 0;
 }
