@@ -252,11 +252,10 @@ void (*orig_exit_group)(int);
 void my_exit_group(int status)
 {
   pid_t pid = current->pid;
-  //DELETE PID
+  // DELETE PID
   del_pid(pid);
-  //ORIGINAL EXIT GROUP
+  // ORIGINAL EXIT GROUP
   orig_exit_group(status);
-
 
 }
 //----------------------------------------------------------------
@@ -351,7 +350,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   if ((syscall < 0) || (syscall > NR_syscalls) || (syscall == MY_CUSTOM_SYSCALL)) {
     return -EINVAL;
   }
-  printk("%i\n", pid);
 
   if (cmd == REQUEST_SYSCALL_INTERCEPT) {
     /* Check permissions and whether or not it's being intercepted */
@@ -407,7 +405,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
       if (pid == 0) {
         return -EPERM;
       }
-      if (check_pid_from_list(current->pid, pid) != 0) {
+      else if (check_pid_from_list(current->pid, pid) != 0) {
         return -EPERM;
       }
     }
@@ -437,7 +435,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
       if (pid == 0) {
         return -EPERM;
       }
-      if (check_pid_from_list(current->pid, pid) != 0) {
+      else if (check_pid_from_list(current->pid, pid) != 0) {
         return -EPERM;
       }
     }
@@ -453,7 +451,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
       spin_unlock(&pidlist_lock);
       return -EINVAL;
     }
-    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     spin_unlock(&pidlist_lock);
   }
 
