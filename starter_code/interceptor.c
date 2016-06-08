@@ -281,15 +281,18 @@ void my_exit_group(int status)
 asmlinkage long interceptor(struct pt_regs reg) {
 
   pid_t curr = current->pid;
-
-  if ((table[reg.ax]).monitored == 2) {
+  
+  /* Check if pid is not on the system call blacklist */ 
+  if ((table[reg.ax]).monitored == 2 && check_pid_monitored(reg.ax, curr) == 0) {
     log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
   }
+  
+  /* Check if pid is being monitored */
   else if ((table[reg.ax]).monitored == 1 && check_pid_monitored(reg.ax, curr) == 1) {
     log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
   }
 
-  /* Haven't dealt with blacklisting yet. */
+  /* call original system call, return its return value. */ 
   return table[reg.ax].f(reg);
 }
 
