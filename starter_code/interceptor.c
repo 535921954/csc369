@@ -380,10 +380,10 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   // REQUEST_SYSCALL_RELEASE
 	else if (cmd == REQUEST_SYSCALL_RELEASE) {
     // Check if the syscall is actually being intercepted
-    if (((table[syscall]).intercepted == 0) && cmd == REQUEST_SYSCALL_RELEASE) {
+    if (table[syscall].intercepted == 0) {
       return -EINVAL;
     }
-
+    // Remove pid list
     destroy_list(syscall);
     // Replace the syscall back with the original
     spin_lock(&calltable_lock);
