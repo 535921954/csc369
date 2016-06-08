@@ -353,6 +353,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 	}
 	
 	return 0; 
+}
 
 	/*
   // Check permissions (only root user allowed)
