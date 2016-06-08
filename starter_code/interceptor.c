@@ -359,7 +359,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   // REQUEST_SYSCALL_INTERCEPT
 	if (cmd == REQUEST_SYSCALL_INTERCEPT) {
     // Check if syscall already being intercepted
-    if (((table[syscall]).intercepted == 1) && cmd == REQUEST_SYSCALL_INTERCEPT) {
+    if (table[syscall].intercepted == 1) {
       return -EBUSY;
     }
     // Syscall is now being intercepted
@@ -378,11 +378,13 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 	}
 
   // REQUEST_SYSCALL_RELEASE
-	if (cmd == REQUEST_SYSCALL_RELEASE) {
+	else if (cmd == REQUEST_SYSCALL_RELEASE) {
     // Check if the syscall is actually being intercepted
     if (((table[syscall]).intercepted == 0) && cmd == REQUEST_SYSCALL_RELEASE) {
       return -EINVAL;
     }
+
+    destroy_list(syscall);
     // Replace the syscall back with the original
     spin_lock(&calltable_lock);
     set_addr_rw((unsigned long)sys_call_table);
