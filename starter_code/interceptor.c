@@ -427,31 +427,30 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   }
 
   else if (cmd == REQUEST_STOP_MONITORING) {
-
-    //error handling
+    /* Check if valid pid and check permissions */
     if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
       return -EINVAL;
     }
+    /* Check permissions */
     if (current_uid() != 0) {
-      return -EPERM;
-    }
-    //check if the syscall is not intercepted
-    if (table[syscall].intercepted == 0) {
-      return -EINVAL;
-    }
-    //Check if not being monitored
-    if (check_pid_monitored(syscall, pid) == 0) {
-      return -EINVAL;
+      if (check_pid_from_list(current->pid, pid) != 0) {
+        return -EPERM;
+      }
+      if (pid == 0) {
+        return -EPERM;
+      }
     }
 
-    spin_lock(&pidlist_lock);
-    if (pid == 0) {
-    // stop monitor for this syscall
-      destroy_list(syscall);
+    /* Check whether syscall is being intercepted or monitored */
+    if ((table[syscall].intercepted == 0) || (check_pid_monitored(syscall, pid) == 0)) {
+      return -EINVAL;
     }
-    else {
-    // stop monitor the specified process for this syscall
-    del_pid_sysc(pid, syscall);
+    /* Stop monitoring the syscall */
+    spin_lock(&pidlist_lock);
+    /* Stop monitoring the specified process for this syscall */
+    if (del_pid_sysc(pid, syscall) != 0) {
+      spin_unlock(&pidlist_lock);
+      return -EINVAL;
     }
     spin_unlock(&pidlist_lock);
   }
@@ -460,50 +459,6 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 }
 
 
-  /*
-  if (cmd == REQUEST_START_MONITORING) {
-    // Check if the pid is valid
-    if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL) {
-      return -EINVAL;
-    }
-    return 0;
-  } */
-/*
-  return 0;
-
-}
-*/
-/*
-asmlinkage long my_syscall(int cmd, int syscall, int pid) {
-  //check if sys call is vaild
-  if(syscall < 0 || syscall > NR_syscalls || syscall == MY_CUSTOM_SYSCALL)){
-    return -EINVAL;
-  }
-  //check if pid is valid
-  if(pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL){
-    return -EINVAL;
-  }
-  //check permissions
-  if(cmd == REQUEST_SYSCALL_INTERCEPT){
-    return 0;
-  }
-  else if (cmd == REQUEST_SYSCALL_RELEASE){
-    return 0;
-  }
-  else if(cmd == REQUEST_START_MONITORING){
-    return 0;
-  }
-  else if(cmd == REQUEST_STOP_MONITORING){
-    return 0;
-  }
-
-
-
-
-
-  return -EINVAL;
-}
-*/
 /**
  *
  */
@@ -526,25 +481,22 @@ long (*orig_custom_syscall)(void);
  * - Ensure synchronization as needed.
  */
 static int init_function(void) {
-  // Initialize variables
+  /* Initialize variables and locks for synchronization */
   int i = 0;
   orig_custom_syscall = sys_call_table[MY_CUSTOM_SYSCALL];
   orig_exit_group = sys_call_table[__NR_exit_group];
-  // Initialize locks for synchronization
   spin_lock_init(&calltable_lock);
   spin_lock_init(&pidlist_lock);
 
-  // Lock calltable and make editable
+  /* Hijack syscalls and save originals */
   spin_lock(&calltable_lock);
   set_addr_rw((unsigned long)sys_call_table);
-  // Call to my_syscall and my_exit_group
   sys_call_table[MY_CUSTOM_SYSCALL] = &my_syscall;
   sys_call_table[__NR_exit_group] = &my_exit_group;
-  // Set back to read-only and unlock calltable
   set_addr_ro((unsigned long)sys_call_table);
   spin_unlock(&calltable_lock);
 
-  // Bookkeeping for data structures
+  /* Bookkeeping for data structures */
   for (i = 0; i < NR_syscalls; i++) {
     INIT_LIST_HEAD(&(table[i].my_list));
     table[i].intercepted = 0;
@@ -567,19 +519,17 @@ static int init_function(void) {
  */
 static void exit_function(void)
 {
-  // Clear pids
+  /* Clear pids */
   int i = 0;
   for (i = 0; i < NR_syscalls; i++) {
     destroy_list(i);
   }
 
-  // Lock calltable and make editable
+  /* Restore syscalls to originals */
   spin_lock(&calltable_lock);
   set_addr_rw((unsigned long)sys_call_table);
-  // Restore syscalls
   sys_call_table[MY_CUSTOM_SYSCALL] = orig_custom_syscall;
   sys_call_table[__NR_exit_group] = orig_exit_group;
-  // Set read-only and unlock calltable
   set_addr_ro((unsigned long)sys_call_table);
   spin_unlock(&calltable_lock);
 
