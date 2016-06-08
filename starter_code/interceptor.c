@@ -285,9 +285,11 @@ asmlinkage long interceptor(struct pt_regs reg) {
 
   if ((table[reg.ax]).monitored == 2) {
     log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
   }
   else if ((table[reg.ax]).monitored == 1 && check_pid_monitored(reg.ax, curr) == 1) {
     log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
   }
 
   /* Haven't dealt with blacklisting yet. */
@@ -348,12 +350,12 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   *  depending on type of command */
 
   // Check if valid syscall
-  printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+  printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
 	if ((syscall < 0) || (syscall > NR_syscalls) || (syscall == MY_CUSTOM_SYSCALL)) {
 		return -EINVAL;
 	}
   // Check permissions (only root user allowed)
-  printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+  printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
   if (current_uid() != 0) {
     return -EPERM;
   }
@@ -361,27 +363,27 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   // REQUEST_SYSCALL_INTERCEPT
 	if (cmd == REQUEST_SYSCALL_INTERCEPT) {
     // Check if syscall already being intercepted
-    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     if (table[syscall].intercepted == 1) {
       return -EBUSY;
     }
-    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     // Syscall is now being intercepted
 		table[syscall].intercepted == 1;
     // Save original syscall into f
-    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     table[syscall].f = sys_call_table[syscall];
     // Call locks and set rewritable
-    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     spin_lock(&calltable_lock);
     set_addr_rw((unsigned long)sys_call_table);
     // Call to interceptor
-    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     sys_call_table[syscall] = &interceptor;
     // Set back to read-only and unlock
-    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     set_addr_ro((unsigned long)sys_call_table);
-    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     spin_unlock(&calltable_lock);
     return 0;
 	}
@@ -389,7 +391,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   // REQUEST_SYSCALL_RELEASE
 	else if (cmd == REQUEST_SYSCALL_RELEASE) {
     // Check if the syscall is actually being intercepted
-    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     if (table[syscall].intercepted == 0) {
       return -EINVAL;
     }
@@ -398,7 +400,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
     // Replace the syscall back with the original
     spin_lock(&calltable_lock);
     set_addr_rw((unsigned long)sys_call_table);
-    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
+    printk(KERN_DEBUG "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     sys_call_table[syscall] = table[syscall].f;
     set_addr_ro((unsigned long)sys_call_table);
     spin_unlock(&calltable_lock);
