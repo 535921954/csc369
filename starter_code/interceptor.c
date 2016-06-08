@@ -351,6 +351,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
   if ((syscall < 0) || (syscall > NR_syscalls) || (syscall == MY_CUSTOM_SYSCALL)) {
     return -EINVAL;
   }
+  printk(pid);
 
   if (cmd == REQUEST_SYSCALL_INTERCEPT) {
     /* Check permissions and whether or not it's being intercepted */
@@ -452,6 +453,7 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
       spin_unlock(&pidlist_lock);
       return -EINVAL;
     }
+    printk(KERN_ALERT "DEBUG: Passed %s %d \n",__FUNCTION__,__LINE__);
     spin_unlock(&pidlist_lock);
   }
 
