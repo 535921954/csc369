@@ -249,12 +249,11 @@ void (*orig_exit_group)(int);
  * The exiting process's PID can be retrieved using the current variable (current->pid).
  * Don't forget to call the original exit_group.
  */
-void my_exit_group(int status)
-{
+void my_exit_group(int status) {
   pid_t pid = current->pid;
-  // DELETE PID
+  /* Remove pid from all the lists of monitored pids, then call
+   * original exit group */
   del_pid(pid);
-  // ORIGINAL EXIT GROUP
   orig_exit_group(status);
 
 }
@@ -281,18 +280,18 @@ void my_exit_group(int status)
 asmlinkage long interceptor(struct pt_regs reg) {
 
   pid_t curr = current->pid;
-  
-  /* Check if pid is not on the system call blacklist */ 
+
+  /* Check if pid is not on the system call blacklist */
   if ((table[reg.ax]).monitored == 2 && check_pid_monitored(reg.ax, curr) == 0) {
     log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
   }
-  
+
   /* Check if pid is being monitored */
   else if ((table[reg.ax]).monitored == 1 && check_pid_monitored(reg.ax, curr) == 1) {
     log_message(curr, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
   }
 
-  /* call original system call, return its return value. */ 
+  /* Call original system call and return its return value. */
   return table[reg.ax].f(reg);
 }
 
@@ -397,92 +396,93 @@ asmlinkage long my_syscall(int cmd, int syscall, int pid) {
     spin_unlock(&calltable_lock);
 
   }
-  
+
   else if (cmd == REQUEST_START_MONITORING) {
-  	//check if pid is valid
-	  if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
-		  return -EINVAL; 
-	  }
-	  //check permission
-	  if (current_uid() != 0) {
-		  if (pid == 0) {
-			  return -EPERM; 
-		  }
-		  else if (check_pid_from_list(current->pid, pid) != 0) {
-			  return -EPERM; 
-		  }
-	  }
-	  //all this syscall's processes monitored
-	  if (pid == 0) {
-		  table[syscall].monitored = 2; 
-	  }
-	  //monitor the specified pid's process
-	  else {
-		  table[syscall].monitored = 1;
-		  //check if the process is already being monitored
-		  if (check_pid_monitored(syscall, pid) == 1) {
-			  return -EBUSY; 
-		  }
-		  else {
-			  spin_lock(&pidlist_lock);
-			  if (add_pid_sysc(pid, syscall) != 0) {
-				  spin_unlock(&pidlist_lock);
-				  return -ENOMEM;
-				  }
-			  spin_unlock(&pidlist_lock);
-		}
-	  }
+    /* Check if pid is valid */
+    if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
+      return -EINVAL;
+    }
+    /* Check permissions */
+    if (current_uid() != 0) {
+      if (pid == 0) {
+        return -EPERM;
+      }
+      else if (check_pid_from_list(current->pid, pid) != 0) {
+        return -EPERM;
+      }
+    }
+    /* All this syscall's processes are monitored */
+    if (pid == 0) {
+      table[syscall].monitored = 2;
+    }
+    /* Monitor this specified pid's process */
+    else {
+      table[syscall].monitored = 1;
+      /* Check if the process is already being monitored; if not, monitor
+       * the process */
+      if (check_pid_monitored(syscall, pid) == 1) {
+        return -EBUSY;
+      }
+      else {
+        spin_lock(&pidlist_lock);
+        if (add_pid_sysc(pid, syscall) != 0) {
+          spin_unlock(&pidlist_lock);
+          return -ENOMEM;
+          }
+        spin_unlock(&pidlist_lock);
+      }
+    }
   }
-  
+
   else if (cmd == REQUEST_STOP_MONITORING) {
-  	//check if pid is valid
-	  if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
-		  return -EINVAL; 
-	  }
-	  //check permission
-	  if (current_uid() != 0) {
-		  if (pid == 0) {
-			  return -EPERM; 
-		  }
-		  else if (check_pid_from_list(current->pid, pid) != 0) {
-			  return -EPERM; 
-		  }
-	  }
-	  //check if intercepted
-	  if (table[syscall].intercepted == 0) {
-		  return -EINVAL; 
-	  }
-	  //all this syscall's processes monitored,stop them
-	  if (pid == 0) {
-		  destroy_list(syscall); 
-		  table[syscall].monitored = 0; 
-	  }
-	  else {
-	  	//check if the pid is monitored
-		  if (check_pid_monitored(syscall, pid) == 0) {
-			  return -EINVAL; 
-		  }
-		  //the pid is monitored,stop the pid's process
-		  if (table[syscall].monitored == 1) {
-			  spin_lock(&pidlist_lock);
-			  if (del_pid_sysc(pid, syscall) != 0) {
-				  spin_unlock(&pidlist_lock);
-				  return -EINVAL;
-				  }
-			  spin_unlock(&pidlist_lock); 
-			}
-		  else if (table[syscall].monitored == 2) {
-			  spin_lock(&pidlist_lock);
-			  if (add_pid_sysc(pid, syscall) != 0) {
-				  spin_unlock(&pidlist_lock);
-				  return -ENOMEM;
-				  }
-			  spin_unlock(&pidlist_lock);
-		  }
-	  }
+    /* Check if pid is valid */
+    if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) == NULL)) {
+      return -EINVAL;
+    }
+    /* Check permissions */
+    if (current_uid() != 0) {
+      if (pid == 0) {
+        return -EPERM;
+      }
+      else if (check_pid_from_list(current->pid, pid) != 0) {
+        return -EPERM;
+      }
+    }
+    /* Check if syscall is being intercepted */
+    if (table[syscall].intercepted == 0) {
+      return -EINVAL;
+    }
+    /* All this syscall's processes monitored, stop them */
+    if (pid == 0) {
+      destroy_list(syscall);
+      table[syscall].monitored = 0;
+    }
+    else {
+      /* Check if the pid is monitored */
+      if (check_pid_monitored(syscall, pid) == 0) {
+        return -EINVAL;
+      }
+      /* If pid is monitored, remove it from the list of monitored pids */
+      if (table[syscall].monitored == 1) {
+        spin_lock(&pidlist_lock);
+        if (del_pid_sysc(pid, syscall) != 0) {
+          spin_unlock(&pidlist_lock);
+          return -EINVAL;
+          }
+        spin_unlock(&pidlist_lock);
+      }
+      /* If all pids are monitored, add pid to blacklist */
+      else if (table[syscall].monitored == 2) {
+        spin_lock(&pidlist_lock);
+        if (add_pid_sysc(pid, syscall) != 0) {
+          spin_unlock(&pidlist_lock);
+          return -ENOMEM;
+        }
+        spin_unlock(&pidlist_lock);
+      }
+    }
   }
-  
-  
+
   return 0;
 }
 
@@ -520,7 +520,7 @@ static int init_function(void) {
   set_addr_ro((unsigned long)sys_call_table);
   spin_unlock(&calltable_lock);
 
-  /* Bookkeeping for data structures */
+  /* Initialize list of monitored pids and set initial values for each syscall */
   for (i = 0; i < NR_syscalls; i++) {
     INIT_LIST_HEAD(&(table[i].my_list));
     table[i].intercepted = 0;
@@ -543,7 +543,7 @@ static int init_function(void) {
  */
 static void exit_function(void)
 {
-  /* Clear pids */
+  /* Clear list of monitored pids for each syscall */
   int i = 0;
   for (i = 0; i < NR_syscalls; i++) {
     destroy_list(i);
