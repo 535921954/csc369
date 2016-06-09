@@ -253,7 +253,9 @@ void my_exit_group(int status) {
   pid_t pid = current->pid;
   /* Remove pid from all the lists of monitored pids, then call
    * original exit group */
+  spin_lock(&pidlist_lock);
   del_pid(pid);
+  spin_unlock(&pidlist_lock);
   orig_exit_group(status);
 
 }
