@@ -65,6 +65,9 @@ struct frame {
 	char in_use;       // True if frame is allocated, False if frame is free
 	pgtbl_entry_t *pte;// Pointer back to pagetable entry (pte) for page
 	                   // stored in this frame
+	int fifo_place;   // The place this frame is being from holding the oldest page, 
+			  // the larger, the further. 
+	int fifo_max;    // One higher than the highest fifo_place currently in use. 
 };
 
 /* The coremap holds information about physical memory.
