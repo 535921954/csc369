@@ -40,12 +40,13 @@ int allocate_frame(pgtbl_entry_t *p) {
 		// Write victim page to swap, if needed, and update pagetable
 		// IMPLEMENTATION NEEDED
 		pgtbl_entry_t *vict = coremap[frame].pte;
-
+		//if page dirty
 		if(vict->frame & PG_DIRTY){
 			evict_clean_count++; 
 		}else{//swap out frame
 			evict_dirty_count++; 
 		}
+		//swap off victim frame
 		vict->swap_off = swap_pageout(frame, vict->swap_off);
 		vict->frame = (vict->frame & (~PG_VALID));
 		vict->frame = (vict->frame | PG_ONSWAP);
