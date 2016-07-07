@@ -146,19 +146,50 @@ char *find_physpage(addr_t vaddr, char type) {
 
 	// IMPLEMENTATION NEEDED
 	// Use top-level page directory to get pointer to 2nd-level page table
-	(void)idx; // To keep compiler happy - remove when you have a real use.
+	 // To keep compiler happy - remove when you have a real use.
+	uintptr_t entry = pgdir[idx].pde;
 
-
+	
+	//if directory not valid
+	if ((entry & PG_VALID) == 0){
+		//initialize a new page table
+		pgdir[idx] = init_second_level(); 
+	}
 	// Use vaddr to get index into 2nd-level page table and initialize 'p'
-
-
-
+	//get the index of page
+	unsigned table_index = PGTBL_INDEX(vaddr);
+	pgtbl_entry_t *pgtable =  (pgtbl_entry_t *) (entry & PAGE_MASK);
+	p = &pgtable[table_index];
+	ref_count += 1; 
 	// Check if p is valid or not, on swap or not, and handle appropriately
-
+	if (p->frame & PG_VALID){//when valid
+		hit_count += 1; 
+	}else{//not valid
+		if (p->frame & PG_ONSWAP){//on swap
+			int frame = allocate_frame(p);
+			swap_pagein(frame, p->swap_off);
+			p->frame = frame << PAGE_SHIFT;
+			p->frame = p->frame | PG_VALID;
+			p->frame = p->frame | PG_ONSWAP;
+			p->frame = p->frame & (~PG_DIRTY);
+		}else{//not on swap
+			//create a new frame for it
+			int frame = allocate_frame(p);
+			init_frame(frame, vaddr);
+			p->frame = frame << PAGE_SHIFT;
+			p->frame = p->frame | PG_VALID;
+			p->frame = p->frame | PG_DIRTY;
+			p->frame = p->frame | PG_ONSWAP;
+		}
+		miss_count += 1;
+	}
 
 
 	// Make sure that p is marked valid and referenced. Also mark it
 	// dirty if the access type indicates that the page will be written to.
+	if (type == "M" || type == "S"){
+		p->frame = p->frame | PG_DIRTY;
+	}
 
 
 
