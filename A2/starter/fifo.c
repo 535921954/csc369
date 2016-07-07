@@ -19,7 +19,7 @@ extern struct frame *coremap;
 int fifo_evict() {
 
 	int ev_page; 
-	int i; 
+	int i;  
 
 	for (i = 0; i < memsize; i++) {
 		if (coremap[i].fifo_place == 1) {
@@ -44,7 +44,7 @@ void fifo_ref(pgtbl_entry_t *p) {
 	int i; 
 
 	//Check if the page is in a frame.
-	if (p-> frame == 1) {
+	if ((((p-> frame) >> 29) & 1) == 1) {
 		for (i = 0; i < memsize; i++) {
 			if(coremap[i].pte == p) {
 				//Check if this is the first time the page is accessed in a frame.
