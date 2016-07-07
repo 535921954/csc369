@@ -43,7 +43,7 @@ int allocate_frame(pgtbl_entry_t *p) {
 		//if page not dirty
 		if(!(vict->frame & PG_DIRTY)){
 			evict_clean_count++; 
-		}else{//swap out frame
+		}else{//when dirty
 			evict_dirty_count++; 
 		}
 		//swap off victim frame
