@@ -44,12 +44,12 @@ int allocate_frame(pgtbl_entry_t *p) {
 		if(!(vict->frame & PG_DIRTY)){
 			evict_clean_count++; 
 		}else{//when dirty
-			evict_dirty_count++; 
+			evict_dirty_count++;
+			vict->frame = (vict->frame | PG_ONSWAP);
 		}
 		//swap off victim frame
 		vict->swap_off = swap_pageout(frame, vict->swap_off);
 		vict->frame = (vict->frame & (~PG_VALID));
-		vict->frame = (vict->frame | PG_ONSWAP);
 		vict->frame = (vict->frame & (~PG_DIRTY));
 
 	}
@@ -167,7 +167,11 @@ char *find_physpage(addr_t vaddr, char type) {
 	}else{//not valid
 		if (p->frame & PG_ONSWAP){//on swap
 			int frame = allocate_frame(p);
-			swap_pagein(frame, p->swap_off);
+			//error handling
+			if((swap_pagein(frame, p->swap_off))!=0){
+				perror("swap_pagein error");
+				exit(1);
+			};
 			p->frame = frame << PAGE_SHIFT;
 			p->frame = p->frame | PG_VALID;
 			p->frame = p->frame | PG_ONSWAP;
