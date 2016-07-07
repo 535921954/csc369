@@ -157,9 +157,8 @@ char *find_physpage(addr_t vaddr, char type) {
 	}
 	// Use vaddr to get index into 2nd-level page table and initialize 'p'
 	//get the index of page
-	unsigned table_index = PGTBL_INDEX(vaddr);
 	pgtbl_entry_t *pgtable =  (pgtbl_entry_t *) (entry & PAGE_MASK);
-	p = &pgtable[table_index];
+	p = &pgtable[PGTBL_INDEX(vaddr)];
 	ref_count += 1; 
 	// Check if p is valid or not, on swap or not, and handle appropriately
 	if (p->frame & PG_VALID){//when valid
