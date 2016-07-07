@@ -160,10 +160,10 @@ char *find_physpage(addr_t vaddr, char type) {
 	//get the index of page
 	pgtbl_entry_t *pgtable =  (pgtbl_entry_t *) (entry & PAGE_MASK);
 	p = &pgtable[PGTBL_INDEX(vaddr)];
-	ref_count += 1; 
+	ref_count++; 
 	// Check if p is valid or not, on swap or not, and handle appropriately
 	if (p->frame & PG_VALID){//when valid
-		hit_count ++; 
+		hit_count++; 
 	}else{//not valid
 		if (p->frame & PG_ONSWAP){//on swap
 			int frame = allocate_frame(p);
@@ -181,7 +181,7 @@ char *find_physpage(addr_t vaddr, char type) {
 			p->frame = p->frame | PG_DIRTY;
 			p->frame = p->frame | PG_ONSWAP;
 		}
-		miss_count ++;
+		miss_count++;
 	}
 
 
