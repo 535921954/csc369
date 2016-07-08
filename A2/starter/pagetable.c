@@ -167,10 +167,12 @@ char *find_physpage(addr_t vaddr, char type) {
 		if (p->frame & PG_ONSWAP){//on swap
 			int frame = allocate_frame(p);
 			//error handling
-			if((swap_pagein(frame, p->swap_off))!=0){
+			if((swap_pagein(frame, p->swap_off))==0){
+				
+			}else{
 				perror("swap_pagein error");
 				exit(1);
-			};
+			}
 			p->frame = frame << PAGE_SHIFT;
 			p->frame = p->frame | PG_ONSWAP;
 			p->frame = p->frame & (~PG_DIRTY);
