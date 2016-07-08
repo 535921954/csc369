@@ -172,7 +172,6 @@ char *find_physpage(addr_t vaddr, char type) {
 				exit(1);
 			};
 			p->frame = frame << PAGE_SHIFT;
-			p->frame = p->frame | PG_VALID;
 			p->frame = p->frame | PG_ONSWAP;
 			p->frame = p->frame & (~PG_DIRTY);
 		}else{//not on swap
@@ -180,7 +179,6 @@ char *find_physpage(addr_t vaddr, char type) {
 			int frame = allocate_frame(p);
 			init_frame(frame, vaddr);
 			p->frame = frame << PAGE_SHIFT;
-			p->frame = p->frame | PG_VALID;
 			p->frame = p->frame | PG_DIRTY;
 			p->frame = p->frame | PG_ONSWAP;
 		}
