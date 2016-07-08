@@ -55,7 +55,6 @@ int allocate_frame(pgtbl_entry_t *p) {
 			perror("swap_pageout error\n");
 			exit(1);
 		}
-		vict->swap_off =
 		vict->frame = (vict->frame & (~PG_VALID));
 		vict->frame = (vict->frame & (~PG_DIRTY));
 		vict->frame = (vict->frame | PG_ONSWAP);
