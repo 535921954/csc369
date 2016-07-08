@@ -45,7 +45,6 @@ int allocate_frame(pgtbl_entry_t *p) {
 			evict_clean_count++; 
 		}else{//when dirty
 			evict_dirty_count++;
-			vict->frame = (vict->frame | PG_ONSWAP);
 		}
 		//swap off victim frame
 		int swapoff_num;
