@@ -157,7 +157,6 @@ char *find_physpage(addr_t vaddr, char type) {
 		pgdir[idx] = init_second_level(); 
 	}
 	// Use vaddr to get index into 2nd-level page table and initialize 'p'
-	//get the index of page
 	pgtbl_entry_t *pgtable =  (pgtbl_entry_t *) (entry & PAGE_MASK);
 	p =  pgtable + PGTBL_INDEX(vaddr);
 	ref_count++; 
