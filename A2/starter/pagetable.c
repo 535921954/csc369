@@ -163,8 +163,8 @@ char *find_physpage(addr_t vaddr, char type) {
 		pgdir[idx] = init_second_level(); 
 	}
 	// Use vaddr to get index into 2nd-level page table and initialize 'p'
-	pgtbl_entry_t *pgtable =  (pgtbl_entry_t *) (entry & PAGE_MASK);
-	p =  &pgtable[PGTBL_INDEX(vaddr)];
+	pgtbl_entry_t *pgtable =  (pgtbl_entry_t *) (pgdir[idx].pde & PAGE_MASK);
+	p =  pgtable + PGTBL_INDEX(vaddr);
 	// Check if p is valid or not, on swap or not, and handle appropriately
 	if (p->frame & PG_VALID){//when valid
 		hit_count++; 
@@ -172,7 +172,7 @@ char *find_physpage(addr_t vaddr, char type) {
 		if (p->frame & PG_ONSWAP){//on swap
 			int frame = allocate_frame(p);
 			//error handling
-			if((swap_pagein(frame, p->swap_off))==0){
+			if((swap_pagein(frame, p->swap_off)) == 0){
 				
 			}else{
 				perror("swap_pagein error\n");
