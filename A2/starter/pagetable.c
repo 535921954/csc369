@@ -49,7 +49,7 @@ int allocate_frame(pgtbl_entry_t *p) {
 		}
 		//swap off victim frame
 		int swapoff_num;
-		if ((swapoff_num = swap_pageout(frame, vict->swap_off))!=1){
+		if ((swapoff_num = swap_pageout(frame, vict->swap_off))!=-1){
 			vict->swap_off = swapoff_num;
 		}else{
 			perror("swap_pageout error\n");
