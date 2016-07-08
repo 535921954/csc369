@@ -44,6 +44,7 @@ int allocate_frame(pgtbl_entry_t *p) {
 		if(!(vict->frame & PG_DIRTY)){
 			evict_clean_count++; 
 		}else{//when dirty
+			vict->frame = (vict->frame | PG_ONSWAP);
 			evict_dirty_count++;
 		}
 		//swap off victim frame
@@ -56,7 +57,6 @@ int allocate_frame(pgtbl_entry_t *p) {
 		}
 		vict->frame = (vict->frame & (~PG_VALID));
 		vict->frame = (vict->frame & (~PG_DIRTY));
-		vict->frame = (vict->frame | PG_ONSWAP);
 
 	}
 
