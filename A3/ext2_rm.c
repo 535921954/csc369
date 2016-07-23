@@ -20,3 +20,16 @@ not been entered). If you decide to do the bonus, make sure first
 that your ext2_rm works, then create a new copy of it and rename
 it to ext2_rm_bonus.c, and implement the additional functionality
 in this separate source file. */
+
+// Standard includes?
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
+int main(int argc, char **argv) {
+  return 0;
+}

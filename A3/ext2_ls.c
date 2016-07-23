@@ -12,3 +12,15 @@ return an ENOENT. Directories passed as the second argument may end in a
 (the last argument) may be a file or link. In this case, your program
 should simply print the file/link name (if it exists) on a single line,
 and refrain from printing the . and ... */
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
+int main(int argc, char **argv) {
+  return 0;
+}

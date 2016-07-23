@@ -9,3 +9,15 @@ error (ENOENT). Please read the specifications of ext2 carefully, some
 things you will not need to worry about (like permissions, gid, uid, etc.),
 while setting other information in the inodes may be important
 (e.g., i_dtime). */
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
+int main(int argc, char **argv) {
+  return 0;
+}

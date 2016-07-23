@@ -9,3 +9,15 @@ return the appropriate error (ENOENT or EEXIST). Again, please
 read the specifications to make sure you're implementing
 everything correctly (e.g., directory entries should be aligned
 to 4B, entry names are not null-terminated, etc.). */
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
+int main(int argc, char **argv) {
+  return 0;
+}

@@ -11,3 +11,15 @@ may take a "-s" flag, after the disk image argument. When this
 flag is used, your program must create a symlink instead (other
 arguments remain the same). If in doubt about correct operation
 of links, use the ext2 specs and ask on the discussion board. */
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
+int main(int argc, char **argv) {
+  return 0;
+}
