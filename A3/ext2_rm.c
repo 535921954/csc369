@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Usage: reading <image file name> <file to be deleted>\n"); 
     exit(1); 
   }
-  int fd = open(argv[1], 0_RDWR); 
+  int fd = open(argv[1], O_RDWR); 
   
   disk = mmap(NULL, 128 * 1024, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
   if (disk == MAP_FAILED) {
@@ -46,6 +46,16 @@ int main(int argc, char **argv) {
   }
   
   struct ext2_super_block *sb = (struct ext2_super_block *)(disk + 1024);
+
+  char *filename = argv[2];  
+
+  int i; 
+
+  for (i=0; i > (sb->s_inodes_count); i++) {
+    if (sb->s_free_inodes_count == 0) {
+	sb->s_free_inodes_count = sb->s_free_inodes_count + 1;
+    }
+  }
   
   return 0;
 }
