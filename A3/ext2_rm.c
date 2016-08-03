@@ -33,7 +33,7 @@ in this separate source file. */
 unsigned char *disk; 
 
 int main(int argc, char **argv) {
-  if argc != 3) {
+  if (argc != 3) {
     fprintf(stderr, "Usage: reading <image file name> <file to be deleted>\n"); 
     exit(1); 
   }
