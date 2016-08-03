@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 		exit(1);
     }
   int cp_file = open(argv[2], O_RDONLY);
-	if (cp_file == NULL) {
+	if (cp_file < 0) {
 		perror("Error");
 		exit(1);
 	}
