@@ -36,5 +36,8 @@ int main(int argc, char **argv) {
 //find directory inode using absolute path
     
     //return -1 if not found print "no such directory"
+    
+    char* path = argv[2];
+    struct ext2_group_desc *group_desc = (struct ext2_group_desc *)(disk + 2048);
   return 0;
 }
