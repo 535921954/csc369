@@ -33,6 +33,8 @@ int main(int argc, char **argv) {
 		perror("mmap");
 		exit(1);
     }
-	
+//find directory inode using absolute path
+    
+    //return -1 if not found print "no such directory"
   return 0;
 }
