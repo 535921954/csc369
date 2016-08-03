@@ -33,7 +33,6 @@ int main(int argc, char **argv) {
 		perror("mmap");
 		exit(1);
     }
-    
     char* path = argv[2];
     struct ext2_group_desc *group_desc = (struct ext2_group_desc *)(disk + 2048);
     //make sure if the path has '/' at the beginning then it is absolute path
@@ -41,5 +40,7 @@ int main(int argc, char **argv) {
 	//find directory inode using absolute path
     
     //return -1 if not found print "no such directory"
+    
+    
   return 0;
 }
