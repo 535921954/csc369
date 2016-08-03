@@ -21,7 +21,6 @@ that your ext2_rm works, then create a new copy of it and rename
 it to ext2_rm_bonus.c, and implement the additional functionality
 in this separate source file. */
 
-// Standard includes?
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -29,7 +28,24 @@ in this separate source file. */
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include "ext2.h"
+
+unsigned char *disk; 
 
 int main(int argc, char **argv) {
+  if (argc != 3) {
+    fprintf(stderr, "Usage: reading <image file name> <file to be deleted>\n"); 
+    exit(1); 
+  }
+  int fd = open(argv[1], 0_RDWR); 
+  
+  disk = mmap(NULL, 128 * 1024, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
+  if (disk == MAP_FAILED) {
+    perror("mmap"); 
+    exit(1); 
+  }
+  
+  struct ext2_super_block *sb = (struct ext2_super_block *)(disk + 1024);
+  
   return 0;
 }
