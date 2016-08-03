@@ -19,5 +19,22 @@ while setting other information in the inodes may be important
 #include <sys/mman.h>
 
 int main(int argc, char **argv) {
+	unsigned char *disk;
+	if(argc != 4) {
+        fprintf(stderr, "please enter correct number of arguments\n");
+        exit(1);
+    }
+	int fd = open(argv[1], O_RDWR);
+	disk = mmap(NULL, 128 * 1024, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if(disk == MAP_FAILED) {
+		printf("disk invaild\n");
+		perror("mmap");
+		exit(1);
+    }
+  int cp_file = open(argv[2], O_RDONLY);
+	if (cp_file == NULL) {
+		perror("Error");
+		exit(1);
+	}
   return 0;
 }
